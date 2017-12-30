@@ -38,9 +38,9 @@ class GarageBluetooth
     BLEPeripheral* _blePeriph;
     BLEService* _bleServ;
 
-    BLEUnsignedCharCharacteristic* _doorChar;
-    BLEUnsignedCharCharacteristic* _rangeDoorChar;
-    BLEUnsignedCharCharacteristic* _rangeCarChar;
+    BLECharCharacteristic* _doorChar;
+    BLECharCharacteristic* _rangeDoorChar;
+    BLECharCharacteristic* _rangeCarChar;
 
     static void blePeripheralCentralConnectedEventHandler(BLECentral& central);
     static void blePeripheralCentralDisconnectedEventHandler(BLECentral& central);

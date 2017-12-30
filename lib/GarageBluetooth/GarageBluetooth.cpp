@@ -29,9 +29,9 @@ void GarageBluetooth::initialize(bool clearBond) {
   _blePeriph = new BLEPeripheral();
   _bleServ = new BLEService(_serviceUuid);
 
-  _doorChar = new BLEUnsignedCharCharacteristic(_doorUuid, BLERead | BLEWrite);
-  _rangeCarChar = new BLEUnsignedCharCharacteristic(_rangeCarUuid, BLERead); // TODO: Notify
-  _rangeDoorChar = new BLEUnsignedCharCharacteristic(_rangeDoorUuid, BLERead); // TODO: Notify
+  _doorChar = new BLECharCharacteristic(_doorUuid, BLERead | BLEWrite);
+  _rangeCarChar = new BLECharCharacteristic(_rangeCarUuid, BLERead); // TODO: Notify
+  _rangeDoorChar = new BLECharCharacteristic(_rangeDoorUuid, BLERead); // TODO: Notify
 
   // setup bond store for secure pairing
   // _bleBondStore = new BLEBondStore();

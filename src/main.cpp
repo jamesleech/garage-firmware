@@ -9,18 +9,23 @@
 #define LED_DEFAULT LOW
 
 GarageBluetooth garageBluetooth("James' Garage", "James' Garage");
+bool toggleDoor = false;
+
+bool wasConnected = false;
 
 static void doorWrittenEventHandler(BLECentral& central, BLECharacteristic& characteristic) {
   Serial.print("doorWrittenEventHandler, central: ");
   Serial.println(central.address());
 
-  // Serial.print("Door Value Written: ");
-  // Serial.println(characteristic.value());
+  char value;
+  memcpy(&value, (char *)characteristic.value(), characteristic.valueSize());
 
-  unsigned int value;
-  memcpy(&value, (unsigned char*)characteristic.value(), characteristic.valueSize());
+  Serial.print("Door Value Written: ");
+  Serial.println(value);
 
-  if (value == 0xFF) {
+  toggleDoor = !toggleDoor;
+  // just toggle an led for now...
+  if (toggleDoor) {
     digitalWrite(LED_PIN, LED_ACTIVE);
   }
   else {
@@ -50,10 +55,7 @@ void setup() {
   Serial.println("Setup Complete");
 }
 
-bool wasConnected = false;
-
-void loop() 
-{
+void loop() {
   // Serial.println("Loop ");
   garageBluetooth.poll();
 
