@@ -85,6 +85,12 @@ void GarageBluetooth::blePeripheralCentralConnectedEventHandler(BLECentral& cent
   // central connected event handler
   Serial.print("Connected event, central: ");
   Serial.println(central.address());
+
+  if (central) {
+    Serial.print("Connected event, central is valid ");
+  } else {
+    Serial.print("Connected event, central is invalid ");
+  }
 }
 
 void GarageBluetooth::blePeripheralCentralDisconnectedEventHandler(BLECentral& central) {
