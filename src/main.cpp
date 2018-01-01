@@ -1,9 +1,9 @@
 // Import libraries (BLEPeripheral depends on SPI)
 
-#include <GarageBluetooth.h>
 #include <Crypto.h>
 #include <AES.h>
 #include <string.h>
+#include <GarageBluetooth.h>
 
 //////////////
 // Hardware //
@@ -14,7 +14,6 @@
 
 GarageBluetooth garageBluetooth("James' Garage", "James' Garage");
 bool toggleDoor = false;
-
 bool wasConnected = false;
 
 struct TestVector {
@@ -153,30 +152,64 @@ void runCryptoTest() {
 }
 
 
-static void doorWrittenEventHandler(BLECentral& central, BLECharacteristic& characteristic) {
-  Serial.print("doorWrittenEventHandler, central: ");
-  Serial.println(central.address());
+// static void doorWrittenEventHandler(BLECentral& central, BLECharacteristic& characteristic) {
+//   Serial.print("doorWrittenEventHandler, central: ");
+//   Serial.println(central.address());
 
-  char value;
-  memcpy(&value, (char *)characteristic.value(), characteristic.valueSize());
+//   char value;
+//   memcpy(&value, (char *)characteristic.value(), characteristic.valueSize());
 
-  Serial.print("Door Value Written: ");
-  Serial.println(value);
+//   Serial.print("Door Value Written: ");
+//   Serial.println(value);
 
-  toggleDoor = !toggleDoor;
-  // just toggle an led for now...
-  if (toggleDoor) {
-    digitalWrite(LED_PIN, LED_ACTIVE);
-  }
-  else {
-    digitalWrite(LED_PIN, !LED_ACTIVE);
-  }
+//   toggleDoor = !toggleDoor;
+//   // just toggle an led for now...
+//   if (toggleDoor) {
+//     digitalWrite(LED_PIN, LED_ACTIVE);
+//   }
+//   else {
+//     digitalWrite(LED_PIN, !LED_ACTIVE);
+//   }
 
-  unsigned int rangeCar = value + 2;
-  unsigned int rangeDoor = value + 8;
+//   unsigned int rangeCar = value + 2;
+//   unsigned int rangeDoor = value + 8;
 
-  garageBluetooth.setRangeCar(rangeCar);
-  garageBluetooth.setRangeDoor(rangeDoor);
+//   garageBluetooth.setRangeCar(rangeCar);
+//   garageBluetooth.setRangeDoor(rangeDoor);
+// }
+
+CommandMessage command;
+
+static void newDoorWrittenEventHandler(BLECentral& central, BLECharacteristic& characteristic) {
+    Serial.print("newDoorWrittenEventHandler, central: ");
+    Serial.println(central.address());
+
+    if (characteristic.written()) {
+        // copy the value written
+        memcpy(&command, characteristic.value(), sizeof(command));
+
+        garageBluetooth.setSerialNumber(command.serialNumber);
+        Serial.print("SerialNumber: ");
+        Serial.println(command.serialNumber);
+
+        garageBluetooth.setCounter(command.counter);
+        Serial.print("Counter: ");
+        Serial.println(command.counter);
+
+        garageBluetooth.setCommand(command.command);
+        Serial.print("Command: ");
+        Serial.println(command.command);
+
+        garageBluetooth.setMAC(command.MAC);
+        Serial.print("MAC: ");
+        Serial.print(command.MAC[0]);
+        Serial.print(command.MAC[1]);
+        Serial.print(command.MAC[2]);
+        Serial.println(command.MAC[3]);
+
+        // garageBluetooth.setRangeCar(command.byte1);
+        // garageBluetooth.setRangeDoor(command.byte2);
+    }
 }
 
 void setup() {
@@ -186,10 +219,10 @@ void setup() {
   digitalWrite(LED_PIN, LED_ACTIVE);
 
   garageBluetooth.initialize(true);
-  garageBluetooth.setDoorEventHandler(doorWrittenEventHandler);
+  garageBluetooth.setNewDoorEventHandler(newDoorWrittenEventHandler);
   garageBluetooth.begin(!LED_ACTIVE, 255, 255);
 
-  runCryptoTest();
+//   runCryptoTest();
 
   delay(100);
   digitalWrite(LED_PIN, !LED_ACTIVE);
