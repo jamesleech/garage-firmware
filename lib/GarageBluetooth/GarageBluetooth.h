@@ -4,27 +4,13 @@
 #include <SPI.h>
 #include <BLEPeripheral.h>
 
-
-// From the discussion above, the following message format is suggested: 
-// 4 bytes for the serial number, 
-// 1 command byte, 
-// 4 bytes for the counter value and 
-// 4 bytes for the MAC. 
-// That is a total of 13 bytes or 104 bits.
-// This format will be used in the rest of this application note, but is easily customized.
-
-#define KEY_BITS 128 //!< Use AES128 //#define KEY_BITS 192 //!< Use AES192 //#define KEY_BITS 256 //!< Use AES256
-
-#define MAC_SIZE 4
-
-//! Maximum number of transmitters associated with one receiver.
-#define MAX_TRANSMITTERS 5
+#include "../../src/config.h"
 
 struct CommandMessage {
-  uint32_t serialNumber;
-  uint32_t counter;
-  uint8_t command;
-  char MAC[MAC_SIZE];
+  uint32_t serialNumber; // 4 bytes
+  uint32_t counter;      // 4 bytes
+  uint8_t command;       // 1 bytes
+  char MAC[HMAC_SIZE];
 };
 
 class GarageBluetooth {

@@ -24,12 +24,15 @@ void GarageBluetooth::setRangeDoor(unsigned char range) {
 void GarageBluetooth::setSerialNumber(uint32_t newValue) {
   _serialNumberChar->setValue(newValue);
 }
+
 void GarageBluetooth::setCounter(uint32_t newValue) {
   _counterChar->setValue(newValue);
 }
+
 void GarageBluetooth::setCommand(uint8_t newValue) {
   _commandChar->setValue(newValue);
 }
+
 void GarageBluetooth::setMAC(char* newValue) {
   _macChar->setValue(newValue);
 }
@@ -49,7 +52,7 @@ void GarageBluetooth::initialize(bool clearBond) {
   _serialNumberChar = new BLEUnsignedIntCharacteristic(_serialNumberUuid, BLERead);
   _counterChar = new BLEUnsignedIntCharacteristic(_counterUuid, BLERead);
   _commandChar = new BLECharCharacteristic(_commandUuid, BLERead);
-  _macChar = new BLEFixedLengthCharacteristic(_macUuid, BLERead, sizeof(char) * MAC_SIZE);
+  _macChar = new BLEFixedLengthCharacteristic(_macUuid, BLERead, sizeof(char) * HMAC_SIZE);
 
   // setup bond store for secure pairing
   // _bleBondStore = new BLEBondStore();
@@ -70,6 +73,8 @@ void GarageBluetooth::initialize(bool clearBond) {
   _blePeriph->addAttribute(*_newDoorChar);
   _blePeriph->addAttribute(*_rangeCarChar);
   _blePeriph->addAttribute(*_rangeDoorChar);
+
+  // Add debug characteristics
   _blePeriph->addAttribute(*_serialNumberChar);
   _blePeriph->addAttribute(*_counterChar);
   _blePeriph->addAttribute(*_commandChar);
