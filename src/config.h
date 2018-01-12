@@ -5,7 +5,9 @@
 #define LED_ACTIVE HIGH // Pin 7 LED is active low
 #define LED_DEFAULT LOW
 
-#define KEY_LEN 16
+#define KEY_LENGTH 16
+
+#define SHA256HMAC_SIZE 32
 #define HMAC_SIZE 11
 
 #define MAX_TRANSMITTERS 5

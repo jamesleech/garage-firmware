@@ -1,6 +1,6 @@
 // Import libraries (BLEPeripheral depends on SPI)
 #include <Crypto.h>
-#include <SHA3.h>
+#include <SHA256.h>
 #include <string.h>
 #include <GarageBluetooth.h>
 #include "config.h"
@@ -11,10 +11,9 @@ bool wasConnected = false;
 
 CommandMessage command;
 
-uint8_t key[KEY_LEN] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-uint8_t hmac[HMAC_SIZE];
-
-SHA3_256 sha3_256;
+const char *key = "0123456789abcdef";
+uint8_t authCode[SHA256HMAC_SIZE];
+SHA256 hasher;
 
 static void newDoorWrittenEventHandler(BLECentral& central, BLECharacteristic& characteristic) {
     Serial.print("newDoorWrittenEventHandler, central: ");
@@ -23,7 +22,7 @@ static void newDoorWrittenEventHandler(BLECentral& central, BLECharacteristic& c
     if (characteristic.written()) {
         // copy the value written
         memcpy(&command, characteristic.value(), sizeof(command));
-
+      
         garageBluetooth.setSerialNumber(command.serialNumber);
         Serial.print("SerialNumber: ");
         Serial.println(command.serialNumber);
@@ -37,29 +36,39 @@ static void newDoorWrittenEventHandler(BLECentral& central, BLECharacteristic& c
         Serial.println(command.command);
 
         garageBluetooth.setMAC(command.MAC);
-        Serial.print("MAC: ");
-        for (int i = 0; i < HMAC_SIZE; i++) {
-          Serial.print(command.MAC[i]);
-        }
-        Serial.println("");
 
-        sha3_256.resetHMAC(key, sizeof(key));
-        sha3_256.update(&command.serialNumber, sizeof(command.serialNumber));
-        sha3_256.update(&command.counter, sizeof(command.counter));
-        sha3_256.update(&command.command, sizeof(command.command));
-        sha3_256.finalizeHMAC(key, sizeof(key), hmac, sizeof(hmac));
+        //also grab the bytes
+        const int8_t msgSize = 20;
+        uint8_t msgBytes[msgSize];
+        memcpy(msgBytes, characteristic.value(), sizeof(uint8_t) * msgSize);
 
-        Serial.print("Calculated MAC: ");
-        for (int i = 0; i < HMAC_SIZE; i++) {
-          Serial.print(hmac[i]);
-          Serial.print(",");
+        Serial.println("Printing given msg bytes");
+        for (int i = 0; i < msgSize; i++) {
+          Serial.print(msgBytes[i], DEC);
+          Serial.print(", ");
         }
-        Serial.println("");
+        Serial.println();
 
-        int hmacCheck = memcmp (hmac, &(command.MAC), sizeof(HMAC_SIZE) );
-        if(hmacCheck == 0) {
-          Serial.println("MAC's are equal");
+        // calculate the HMAC
+        hasher.resetHMAC(key, strlen(key));
+        hasher.update(msgBytes, 9); //msgSize);
+        // Finish the HMAC calculation and return the authentication code
+        hasher.finalizeHMAC(key, strlen(key), authCode, sizeof(authCode));
+        // authCode now contains our SHA256HMAC_SIZE byte authentication code
+        Serial.println("Printing Calculated HMAC");
+        for (int i = 0; i < 11; i++) {
+          if(authCode[i] == msgBytes[9+i]) {
+            Serial.print(authCode[i], DEC);
+            Serial.print(", ");
+          } else {
+            Serial.print("Misatch: ");
+            Serial.print(authCode[i], DEC);
+            Serial.print(" != ");
+            Serial.print(msgBytes[9+i], DEC);
+            Serial.print(", ");
+          }
         }
+        Serial.println();
     }
 }
 

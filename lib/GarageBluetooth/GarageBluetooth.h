@@ -6,12 +6,14 @@
 
 #include "../../src/config.h"
 
+#pragma pack(push, 1)
 struct CommandMessage {
   uint32_t serialNumber; // 4 bytes
   uint32_t counter;      // 4 bytes
   uint8_t command;       // 1 bytes
   char MAC[HMAC_SIZE];
 };
+#pragma pack(pop)
 
 class GarageBluetooth {
   public:
